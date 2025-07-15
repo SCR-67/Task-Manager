@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fashion Store Product Management</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+    }
+    .section {
+      flex: 1;
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    h2 {
+      margin-top: 0;
+    }
+    .product {
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #999;
+      border-radius: 4px;
+    }
+    .product img {
+      max-width: 100px;
+      display: block;
+      margin-bottom: 8px;
+      border-radius: 4px;
+    }
+    .product button {
+      margin-right: 5px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+    form input, form select {
+      margin: 5px 0;
+      padding: 8px;
+    }
+    form button {
+      margin-top: 10px;
+      padding: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="section" id="men">
+    <h2>Men Fashion</h2>
+  </div>
+
+  <div class="section" id="women">
+    <h2>Women Fashion</h2>
+  </div>
+
+  <div class="section" id="manage">
+    <h2>Product Management</h2>
+    <form id="productForm">
+      <label>Product Name</label>
+      <input type="text" id="name" required />
+
+      <label>Price</label>
+      <input type="number" id="price" required />
+
+      <label>Product Type</label>
+      <select id="type">
+        <option>Men</option>
+        <option>Women</option>
+      </select>
+
+      <label>Image</label>
+      <input type="file" id="image" accept="image/*" required />
+
+      <button type="submit">Produre Add</button>
+      <button type="button" id="updateBtn" disabled>Update</button>
+    </form>
+  </div>
+
+  <script>
+    const menSection = document.getElementById("men");
+    const womenSection = document.getElementById("women");
+    const form = document.getElementById("productForm");
+
+    let products = [];
+    let editingIndex = null;
+
+    function renderProducts() {
+      menSection.innerHTML = "<h2>Men Fashion</h2>";
+      womenSection.innerHTML = "<h2>Women Fashion</h2>";
+      products.forEach((p, index) => {
+        const div = document.createElement("div");
+        div.className = "product";
+        div.innerHTML = `
+          <img src="${p.imageUrl}" alt="${p.name}" />
+          <strong>${p.name}</strong> — ₹${p.price}<br>
+          <button onclick="orderProduct(${index})">Order</button>
+          <button onclick="editProduct(${index})">Edit</button>
+          <button onclick="deleteProduct(${index})">Delete</button>
+        `;
+        (p.type === "Men" ? menSection : womenSection).appendChild(div);
+      });
+    }
+
+    form.onsubmit = function(e) {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const price = document.getElementById("price").value;
+      const type = document.getElementById("type").value;
+      const imageFile = document.getElementById("image").files[0];
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const imageUrl = event.target.result;
+
+        if (editingIndex === null) {
+          products.push({ name, price, type, imageUrl });
+        } else {
+          products[editingIndex] = { name, price, type, imageUrl };
+          editingIndex = null;
+          document.getElementById("updateBtn").disabled = true;
+        }
+
+        form.reset();
+        renderProducts();
+      };
+
+      if (imageFile) {
+        reader.readAsDataURL(imageFile);
+      }
+    };
+
+    document.getElementById("updateBtn").onclick = function() {
+      form.onsubmit(new Event("submit"));
+    };
+
+    window.deleteProduct = function(index) {
+      products.splice(index, 1);
+      renderProducts();
+    };
+
+    window.editProduct = function(index) {
+      const p = products[index];
+      document.getElementById("name").value = p.name;
+      document.getElementById("price").value = p.price;
+      document.getElementById("type").value = p.type;
+      editingIndex = index;
+      document.getElementById("updateBtn").disabled = false;
+    };
+
+    window.orderProduct = function(index) {
+      alert(`Order placed for ${products[index].name}`);
+    };
+
+    renderProducts();
+  </script>
+</body>
+</html>
